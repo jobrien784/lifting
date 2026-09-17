@@ -166,7 +166,13 @@
     state.supabase.auth.onAuthStateChange((_event, session) => updateAuth(session ? session.user : null));
   }
   function updateAuth(user) { state.user = user; show($("#signed-in"), Boolean(user)); show($("#auth-form"), !user); $("#signed-in-email").textContent = user ? `Signed in as ${user.email}` : ""; setMessage(user ? "Sync is enabled for this account." : ""); setSyncMessage(user ? "Checking sync queue…" : "Sign in to back up completed sessions to Notion."); if (user) attemptSync().catch(() => {}); }
-  async function requestMagicLink(event) { event.preventDefault(); if (!state.supabase) return setMessage("Supabase is unavailable; local mode still works."); const email = $("#email").value.trim(); const { error } = await state.supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href.split("#")[0] } }); setMessage(error ? error.message : "Check your email for the sign-in link."); }
+  async function requestMagicLink(event) {
+    event.preventDefault();
+    if (!state.supabase) return setMessage("Supabase is unavailable; local mode still works.");
+    const email = $("#email").value.trim();
+    await state.supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href.split("#")[0], shouldCreateUser: false } });
+    setMessage("If this email is authorized, check your inbox for a sign-in link.");
+  }
 
   async function resetRotation() {
     const button = $("#reset-rotation"); if (button.dataset.confirm !== "yes") { button.dataset.confirm = "yes"; button.textContent = "Tap again to confirm"; $("#reset-message").textContent = "This changes only the next workout; completed history is kept."; setTimeout(() => { button.dataset.confirm = ""; button.textContent = "Reset to Push A"; }, 4000); return; }

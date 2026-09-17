@@ -16,9 +16,13 @@ The URL and publishable key in `docs/config.js` are browser-safe configuration. 
 
 In the Supabase dashboard:
 
-1. Run `supabase/migrations/202609170001_lifting_log.sql` in **SQL Editor**.
-2. Add the final GitHub Pages URL under **Authentication → URL Configuration → Redirect URLs**.
-3. Deploy the `sync-notion` Edge Function and set the private secrets described in [`supabase/README.md`](supabase/README.md).
-4. Grant the Notion integration access to the two history data sources. The Notion MCP connection used by Codex does not itself authorize this deployed app.
+1. Run `supabase/migrations/202609170001_lifting_log.sql`, then `supabase/migrations/202609170002_owner_lockdown.sql`, in **SQL Editor**.
+2. Run the private allowlist `insert` command in [`supabase/README.md`](supabase/README.md), replacing its placeholder with your Supabase Auth user UUID. The UUID is entered directly in Supabase and does not belong in GitHub or browser code.
+3. Keep **Allow new users to sign up** disabled under Supabase Authentication. This dashboard setting complements the owner-only RLS policies and Edge Function check; it is not a substitute for either one.
+4. Add the final GitHub Pages URL under **Authentication → URL Configuration → Redirect URLs**.
+5. Deploy the `sync-notion` Edge Function and set the private secrets described in [`supabase/README.md`](supabase/README.md), including the required `ALLOWED_USER_ID` set to the same UUID.
+6. Grant the Notion integration access to the two history data sources. The Notion MCP connection used by Codex does not itself authorize this deployed app.
+
+The Edge Function fails closed with a 503 when `ALLOWED_USER_ID` is missing or invalid, and rejects a different signed-in account before any database or Notion write. The browser also requests magic links with `shouldCreateUser: false` and shows a neutral response. Ownership changes are handled in the private allowlist plus an updated `ALLOWED_USER_ID` secret; editing documentation or public client code does not enforce them.
 
 The original six routine templates remain public in `docs/routines.json`; completed workout history is not public. See the Supabase guide for CORS, secrets, and Notion property mapping.

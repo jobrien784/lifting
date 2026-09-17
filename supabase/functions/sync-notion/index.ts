@@ -5,7 +5,9 @@ const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const notionToken = Deno.env.get("NOTION_TOKEN") ?? "";
 const sessionsDataSourceId = Deno.env.get("NOTION_WORKOUT_SESSIONS_DATA_SOURCE_ID") ?? "";
 const logsDataSourceId = Deno.env.get("NOTION_EXERCISE_LOGS_DATA_SOURCE_ID") ?? "";
+const allowedUserId = (Deno.env.get("ALLOWED_USER_ID") ?? "").trim().toLowerCase();
 const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((origin) => origin.trim()).filter(Boolean);
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 function corsHeaders(request: Request) {
   const origin = request.headers.get("Origin");
@@ -38,6 +40,7 @@ Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(request) });
   if (request.method !== "POST") return response(request, { error: "POST required" }, 405);
   if (!allowedOrigins.length) return response(request, { error: "ALLOWED_ORIGINS is not configured" }, 503);
+  if (!allowedUserId || !uuidPattern.test(allowedUserId)) return response(request, { error: "Sync authorization is not configured" }, 503);
   const authorization = request.headers.get("Authorization");
   if (!authorization?.startsWith("Bearer ")) return response(request, { error: "Authentication required" }, 401);
   if (!supabaseUrl || !serviceRoleKey) return response(request, { error: "Supabase server configuration is incomplete" }, 503);
@@ -47,6 +50,7 @@ Deno.serve(async (request) => {
     const token = authorization.slice("Bearer ".length);
     const { data: { user }, error: userError } = await admin.auth.getUser(token);
     if (userError || !user) return response(request, { error: "Invalid session" }, 401);
+    if (user.id.toLowerCase() !== allowedUserId) return response(request, { error: "Sync is not available for this account" }, 403);
     const payload = await request.json(); const session = payload?.session; assertSessionShape(session);
     const { data: existingSession, error: ownershipError } = await admin.from("workout_sessions").select("user_id").eq("id", session.id).maybeSingle();
     if (ownershipError) throw new Error(`Ownership check failed: ${ownershipError.message}`);
