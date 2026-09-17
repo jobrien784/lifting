@@ -28,8 +28,11 @@ async function notionCreatePage(dataSourceId: string, properties: Record<string,
   if (!result.ok) throw new Error(`Notion rejected a page (${result.status})`);
   return result.json();
 }
-function titleProperty(value: string) { return { title: [{ type: "text", text: { content: value } }] }; }
-function richTextProperty(value: string) { return { rich_text: [{ type: "text", text: { content: value.slice(0, 2000) } }] }; }
+function titleProperty(value: string) { return { title: [{ type: "text", text: { content: value.slice(0, 2000) } }] }; }
+function richTextProperty(value: string) { return value ? { rich_text: [{ type: "text", text: { content: value.slice(0, 2000) } }] } : { rich_text: [] }; }
+function dateProperty(value: string) { return { date: { start: value } }; }
+function selectProperty(value: string) { return { select: { name: value } }; }
+function numericValue(value: unknown): number | null { const text = String(value ?? "").trim(); if (!text) return null; const number = Number(text); return Number.isFinite(number) ? number : null; }
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(request) });
@@ -61,13 +64,31 @@ Deno.serve(async (request) => {
       exercise.sets.forEach((set: any, index: number) => rows.push({ id: `${session.id}:${exercise.exerciseId}:${index + 1}`, session_id: session.id, user_id: user.id, exercise_id: exercise.exerciseId, exercise_name: exercise.name, set_number: index + 1, weight: set.weight ?? null, reps: set.reps == null ? null : String(set.reps), completed: Boolean(set.done), created_at: new Date().toISOString() }));
     }
     if (rows.length) { const { error: logError } = await admin.from("exercise_logs").upsert(rows, { onConflict: "id", ignoreDuplicates: true }); if (logError) throw new Error(`Exercise database write failed: ${logError.message}`); }
-    // These property names are intentionally simple defaults. Adjust them in this
-    // function if the two Notion data sources use different property names.
     const summary = session.exercises.map((exercise: any) => `${exercise.name}: ${exercise.sets.map((set: any) => `${set.reps || "—"} reps @ ${set.weight || "—"}`).join(", ")}`).join("\n");
-    const sessionPage = await notionCreatePage(sessionsDataSourceId, { Name: titleProperty(`${session.routineName} — ${session.workoutDate}`), Date: { date: { start: session.workoutDate } }, Notes: richTextProperty(summary) });
+    const sessionPage = await notionCreatePage(sessionsDataSourceId, {
+      Session: titleProperty(`${session.routineName} — ${session.workoutDate}`),
+      "Completed At": dateProperty(session.finishedAt),
+      Routine: selectProperty(session.routineName),
+      "Supabase Session ID": richTextProperty(session.id),
+      "Started At": dateProperty(session.startedAt),
+      Notes: richTextProperty(summary)
+    });
     for (const exercise of session.exercises) {
-      const details = exercise.sets.map((set: any, index: number) => `Set ${index + 1}: ${set.reps || "—"} reps @ ${set.weight || "—"}${set.done ? "" : " (not completed)"}`).join("\n");
-      await notionCreatePage(logsDataSourceId, { Name: titleProperty(`${session.routineName} — ${exercise.name}`), Date: { date: { start: session.workoutDate } }, Details: richTextProperty(details), "Workout Session": { relation: [{ id: sessionPage.id }] } });
+      for (const [index, set] of exercise.sets.entries()) {
+        const setId = `${session.id}:${exercise.exerciseId}:${index + 1}`;
+        const properties: Record<string, unknown> = {
+          Exercise: titleProperty(exercise.name),
+          "Workout Session": { relation: [{ id: sessionPage.id }] },
+          Set: { number: index + 1 },
+          Weight: richTextProperty(String(set.weight ?? "")),
+          Completed: { checkbox: Boolean(set.done) },
+          Routine: selectProperty(session.routineName),
+          "Supabase Set ID": richTextProperty(setId)
+        };
+        const reps = numericValue(set.reps);
+        if (reps !== null) properties.Reps = { number: reps };
+        await notionCreatePage(logsDataSourceId, properties);
+      }
     }
     const { error: markSyncedError } = await admin.from("workout_sessions").update({ notion_page_id: sessionPage.id, notion_synced_at: new Date().toISOString() }).eq("id", session.id).eq("user_id", user.id);
     if (markSyncedError) throw new Error(`Sync state update failed: ${markSyncedError.message}`);
