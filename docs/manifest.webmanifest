@@ -1,0 +1,14 @@
+{
+  "name": "Lifting Log",
+  "short_name": "Lifting",
+  "description": "A simple workout rotation and lifting log.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101313",
+  "theme_color": "#101313",
+  "orientation": "portrait",
+  "icons": [
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

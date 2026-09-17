@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "sequence": ["push-a", "pull-a", "legs-abs-a", "push-b", "pull-b", "legs-abs-b"],
+  "routines": [
+    {
+      "id": "push-a",
+      "name": "Push A",
+      "category": "Push",
+      "exercises": [
+        {"id":"dumbbell-chest-press","name":"Dumbbell Chest Press","sets":3,"reps":6,"defaultWeight":"55"},
+        {"id":"dumbbell-shoulder-press","name":"Dumbbell Shoulder Press","sets":3,"reps":6,"defaultWeight":"45"},
+        {"id":"cable-flys","name":"Cable Flys","sets":3,"reps":8,"defaultWeight":"30"},
+        {"id":"side-lateral-raises","name":"Side Lateral Raises","sets":3,"reps":10,"defaultWeight":"15"},
+        {"id":"triangle-tricep-pressdowns","name":"Triangle Tricep Pressdowns","sets":3,"reps":10,"defaultWeight":"42.5"},
+        {"id":"overhead-triceps-extension","name":"Overhead Triceps Extension","sets":3,"reps":10,"defaultWeight":"15"}
+      ]
+    },
+    {
+      "id": "pull-a",
+      "name": "Pull A",
+      "category": "Pull",
+      "exercises": [
+        {"id":"bent-over-barbell-row","name":"Bent-over Barbell Row","sets":3,"reps":6,"defaultWeight":"105"},
+        {"id":"pull-ups","name":"Pull Ups","sets":2,"reps":4,"defaultWeight":"Bodyweight"},
+        {"id":"barbell-shrugs-smith","name":"Barbell Shrugs (Smith machine)","sets":3,"reps":8,"defaultWeight":"90"},
+        {"id":"face-pulls","name":"Face Pulls","sets":3,"reps":10,"defaultWeight":"30"},
+        {"id":"ez-bar-curl","name":"EZ Bar Curl","sets":3,"reps":10,"defaultWeight":"30"},
+        {"id":"dumbbell-hammer-curl","name":"Dumbbell Hammer Curl","sets":3,"reps":10,"defaultWeight":"30"}
+      ]
+    },
+    {
+      "id": "legs-abs-a",
+      "name": "Legs / Abs A",
+      "category": "Legs / Abs",
+      "exercises": [
+        {"id":"squat","name":"Squat","sets":3,"reps":6,"defaultWeight":"105"},
+        {"id":"barbell-romanian-deadlifts","name":"Barbell Romanian Deadlifts","sets":3,"reps":6,"defaultWeight":"105"},
+        {"id":"quad-curl","name":"Quad Curl","sets":3,"reps":8,"defaultWeight":"45"},
+        {"id":"leg-curl-hamstring","name":"Leg Curl (Hamstring)","sets":3,"reps":8,"defaultWeight":"25"},
+        {"id":"calf-raise","name":"Calf Raise","sets":3,"reps":10,"defaultWeight":"25"},
+        {"id":"situps-a","name":"Situps","sets":3,"reps":25,"defaultWeight":"Bodyweight"}
+      ]
+    },
+    {
+      "id": "push-b",
+      "name": "Push B",
+      "category": "Push",
+      "exercises": [
+        {"id":"incline-dumbbell-chest-press","name":"Incline Dumbbell Chest Press","sets":3,"reps":6,"defaultWeight":"50"},
+        {"id":"machine-shoulder-press-iso","name":"Machine Shoulder Press (iso machine)","sets":3,"reps":6,"defaultWeight":"55"},
+        {"id":"dumbbell-flys","name":"Dumbbell Flys","sets":3,"reps":8,"defaultWeight":"25"},
+        {"id":"dumbbell-front-raise","name":"Dumbbell Front Raise","sets":3,"reps":10,"defaultWeight":"15"},
+        {"id":"skullcrushers","name":"Skullcrushers","sets":3,"reps":10,"defaultWeight":"40"},
+        {"id":"cable-kickbacks","name":"Cable Kickbacks","sets":3,"reps":10,"defaultWeight":"10"}
+      ]
+    },
+    {
+      "id": "pull-b",
+      "name": "Pull B",
+      "category": "Pull",
+      "exercises": [
+        {"id":"triangle-bar-deadlifts","name":"Triangle Bar Deadlifts","sets":3,"reps":6,"defaultWeight":"155"},
+        {"id":"cable-rows","name":"Cable Rows","sets":3,"reps":6,"defaultWeight":"100"},
+        {"id":"lat-pull-downs-machine","name":"Lat Pull Downs (Machine)","sets":3,"reps":8,"defaultWeight":"90"},
+        {"id":"dumbbell-shrugs","name":"Dumbbell Shrugs","sets":3,"reps":8,"defaultWeight":"45"},
+        {"id":"preacher-curl","name":"Preacher Curl","sets":5,"reps":10,"defaultWeight":"20"},
+        {"id":"concentration-curl","name":"Concentration Curl","sets":5,"reps":10,"defaultWeight":null}
+      ]
+    },
+    {
+      "id": "legs-abs-b",
+      "name": "Legs / Abs B",
+      "category": "Legs / Abs",
+      "exercises": [
+        {"id":"dumbbell-lunges","name":"Dumbbell Lunges","sets":3,"reps":6,"defaultWeight":"30"},
+        {"id":"dumbbell-romanian-deadlifts","name":"Dumbbell Romanian Deadlifts","sets":3,"reps":6,"defaultWeight":"35"},
+        {"id":"leg-press","name":"Leg Press","sets":3,"reps":8,"defaultWeight":"90"},
+        {"id":"leg-curl-hamstring-b","name":"Leg Curl (Hamstring)","sets":3,"reps":10,"defaultWeight":"30"},
+        {"id":"calf-raise-b","name":"Calf Raise","sets":3,"reps":10,"defaultWeight":"20"},
+        {"id":"situps-b","name":"Situps","sets":3,"reps":20,"defaultWeight":"Bodyweight"}
+      ]
+    }
+  ]
+}
