@@ -71,8 +71,13 @@
     for (const session of state.sessions) { const item = session.exercises.find((exercise) => exercise.exerciseId === exerciseId); if (item && item.sets.some((set) => set.done)) return item; }
     return null;
   }
+  function completedPriorSet(exerciseId, setIndex) {
+    const prior = previousForExercise(exerciseId);
+    return prior ? prior.sets.filter((set) => set.done)[setIndex] : null;
+  }
+  function priorOrDefault(value, fallback) { return value !== null && value !== undefined && value !== "" ? value : fallback; }
   function makeDraft(routine) {
-    return { id: "active", sessionId: uid("session"), routineId: routine.id, startedAt: new Date().toISOString(), workoutDate: easternDate(), exercises: routine.exercises.map((exercise) => ({ exerciseId: exercise.id, name: exercise.name, sets: Array.from({ length: exercise.sets }, () => ({ id: uid("set"), weight: exercise.defaultWeight ?? "", reps: exercise.reps, done: false })) })) };
+    return { id: "active", sessionId: uid("session"), routineId: routine.id, startedAt: new Date().toISOString(), workoutDate: easternDate(), exercises: routine.exercises.map((exercise) => ({ exerciseId: exercise.id, name: exercise.name, sets: Array.from({ length: exercise.sets }, (_, index) => { const prior = completedPriorSet(exercise.id, index); return { id: uid("set"), weight: priorOrDefault(prior && prior.weight, exercise.defaultWeight ?? ""), reps: priorOrDefault(prior && prior.reps, exercise.reps), done: false }; }) })) };
   }
   function scheduleDraftSave() { clearTimeout(draftSaveTimer); draftSaveTimer = setTimeout(() => dbPut(STORES.drafts, state.draft).catch(() => notify("Could not save locally")), 120); }
 
@@ -116,7 +121,7 @@
     const button = event.currentTarget;
     const item = state.draft.exercises.find((exercise) => exercise.exerciseId === button.dataset.exercise);
     if (!item) return;
-    if (button.dataset.action === "add-set") { const template = findRoutine(state.draft.routineId).exercises.find((exercise) => exercise.id === item.exerciseId); item.sets.push({ id: uid("set"), weight: template.defaultWeight ?? "", reps: template.reps, done: false }); }
+    if (button.dataset.action === "add-set") { const template = findRoutine(state.draft.routineId).exercises.find((exercise) => exercise.id === item.exerciseId); const prior = completedPriorSet(item.exerciseId, item.sets.length); item.sets.push({ id: uid("set"), weight: priorOrDefault(prior && prior.weight, template.defaultWeight ?? ""), reps: priorOrDefault(prior && prior.reps, template.reps), done: false }); }
     if (button.dataset.action === "remove-set" && item.sets.length > 1) item.sets = item.sets.filter((set) => set.id !== button.dataset.set);
     await dbPut(STORES.drafts, state.draft); state.confirmFinish = false; renderActive();
   }
