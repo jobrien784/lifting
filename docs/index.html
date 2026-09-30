@@ -16,12 +16,6 @@
     <div class="top-actions"><span id="network-status" class="status-dot" title="Connection status"></span><button id="settings-button" class="icon-button" type="button" aria-label="Open settings">⚙</button></div>
   </header>
   <main>
-    <section id="auth-panel" class="auth-panel panel" aria-labelledby="auth-heading">
-      <p class="eyebrow">Private progress log</p><h1 id="auth-heading">Your workout,<br><em>one set at a time.</em></h1>
-      <p class="muted">Use the app offline. Sign in when you want completed sessions backed up to Notion.</p>
-      <form id="auth-form" class="auth-form"><label for="email">Email address</label><div class="inline-form"><input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required><button class="button secondary" type="submit">Email me a link</button></div></form>
-      <p id="auth-message" class="form-message" role="status"></p><div id="signed-in" class="signed-in hidden"><span id="signed-in-email"></span><button id="sign-out" class="text-button" type="button">Sign out</button></div>
-    </section>
     <section id="workout-view" class="view" aria-labelledby="workout-heading">
       <div class="section-heading"><div><p class="eyebrow">Next up</p><h2 id="workout-heading">Your workout</h2></div><span id="rotation-badge" class="badge"></span></div>
       <div id="next-card" class="next-card panel"></div><div id="active-workout" class="hidden"></div>
@@ -30,7 +24,7 @@
     <section id="history-view" class="view hidden" aria-labelledby="history-heading"><div class="section-heading"><div><p class="eyebrow">Your record</p><h2 id="history-heading">Workout history</h2></div><button id="back-to-workout" class="text-button" type="button">Back</button></div><div id="history-list" class="history-list"></div></section>
     <section id="settings-view" class="view hidden" aria-labelledby="settings-heading"><div class="section-heading"><div><p class="eyebrow">App settings</p><h2 id="settings-heading">Settings</h2></div><button id="close-settings" class="text-button" type="button">Done</button></div>
       <div class="panel settings-card"><h3>Rotation</h3><p class="muted">The app advances only when you finish a workout.</p><p class="rotation-sequence">Push A <span>→</span> Pull A <span>→</span> Legs/Abs A <span>→</span> Push B <span>→</span> Pull B <span>→</span> Legs/Abs B</p><button id="reset-rotation" class="button danger" type="button">Reset to Push A</button><p id="reset-message" class="form-message" role="status"></p></div>
-      <div class="panel about-card"><h3>Data &amp; privacy</h3><p class="muted">Your in-progress workout and history live on this device in IndexedDB. When signed in, completed sessions are queued for secure Supabase sync. The public app contains no Notion credentials.</p><p id="sync-status" class="sync-status"></p></div>
+      <div class="panel about-card"><h3>Data &amp; privacy</h3><p class="muted">Your in-progress workout and history live on this device in IndexedDB. An existing signed-in session can continue backing up completed workouts to Notion.</p><p id="sync-status" class="sync-status"></p><div id="signed-in" class="signed-in hidden"><span id="signed-in-email"></span><button id="sign-out" class="text-button" type="button">Sign out</button></div></div>
     </section>
   </main>
   <nav class="bottom-nav" aria-label="Main navigation"><button class="nav-button active" data-view="workout-view" type="button"><span>◒</span>Workout</button><button class="nav-button" data-view="history-view" type="button"><span>▤</span>History</button></nav>

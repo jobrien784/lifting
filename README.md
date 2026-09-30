@@ -4,7 +4,7 @@ An installable, phone-first PWA for the six-workout rotation:
 
 `Push A → Pull A → Legs/Abs A → Push B → Pull B → Legs/Abs B`
 
-The first workout is Push A. The sequence advances only after **Finish workout**. In-progress sessions and completed history are saved locally in IndexedDB, so the app remains useful in a gym with poor reception. When signed in, finished sessions are queued and sent to the Supabase `sync-notion` Edge Function without delaying the Finish action.
+The first workout is Push A. The sequence advances only after **Finish workout**. In-progress sessions and completed history are saved locally in IndexedDB, so the app remains useful in a gym with poor reception. Existing signed-in sessions continue to send finished workouts to the Supabase `sync-notion` Edge Function without delaying the Finish action. The app no longer offers an email sign-in form; a new installation saves workouts locally.
 
 ## Publish the app
 
@@ -23,6 +23,6 @@ In the Supabase dashboard:
 5. Deploy the `sync-notion` Edge Function and set the private secrets described in [`supabase/README.md`](supabase/README.md), including the required `ALLOWED_USER_ID` set to the same UUID.
 6. Grant the Notion integration access to the two history data sources. The Notion MCP connection used by Codex does not itself authorize this deployed app.
 
-The Edge Function fails closed with a 503 when `ALLOWED_USER_ID` is missing or invalid, and rejects a different signed-in account before any database or Notion write. The browser also requests magic links with `shouldCreateUser: false` and shows a neutral response. Ownership changes are handled in the private allowlist plus an updated `ALLOWED_USER_ID` secret; editing documentation or public client code does not enforce them.
+The Edge Function fails closed with a 503 when `ALLOWED_USER_ID` is missing or invalid, and rejects a different signed-in account before any database or Notion write. Ownership changes are handled in the private allowlist plus an updated `ALLOWED_USER_ID` secret; editing documentation or public client code does not enforce them.
 
 The original six routine templates remain public in `docs/routines.json`; completed workout history is not public. See the Supabase guide for CORS, secrets, and Notion property mapping.

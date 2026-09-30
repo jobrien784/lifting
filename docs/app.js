@@ -57,7 +57,6 @@
   function notify(message) { const toast = $("#toast"); toast.textContent = message; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 3000); }
 
   function setNetworkStatus() { $("#network-status").classList.toggle("online", navigator.onLine); $("#network-status").title = navigator.onLine ? "Online" : "Offline — local mode"; }
-  function setMessage(message) { $("#auth-message").textContent = message || ""; }
   function setSyncMessage(message) { $("#sync-status").textContent = message || ""; }
 
   async function loadState() {
@@ -153,8 +152,9 @@
   async function queueForSync(session) { const item = { id: session.id, session, status: "pending", attempts: 0, queuedAt: new Date().toISOString() }; await dbPut(STORES.queue, item); setSyncMessage("A completed session is waiting to sync."); attemptSync().catch(() => {}); }
   async function attemptSync() {
     const pending = (await dbAll(STORES.queue)).filter((item) => item.status !== "synced");
-    if (!pending.length) { setSyncMessage(state.user ? "All completed sessions are synced." : "Sign in to back up completed sessions to Notion."); return; }
-    if (!state.user || !state.supabase || !navigator.onLine) { setSyncMessage(`${pending.length} session${pending.length === 1 ? "" : "s"} waiting to sync.`); return; }
+    if (!pending.length) { setSyncMessage(state.user ? "All completed sessions are synced." : "Cloud backup is inactive; workouts stay on this device."); return; }
+    if (!state.user || !state.supabase) { setSyncMessage(`${pending.length} session${pending.length === 1 ? "" : "s"} saved on this device; cloud backup is inactive.`); return; }
+    if (!navigator.onLine) { setSyncMessage(`${pending.length} session${pending.length === 1 ? "" : "s"} waiting to sync.`); return; }
     const { data } = await state.supabase.auth.getSession(); const token = data && data.session && data.session.access_token;
     if (!token) return;
     for (const item of pending) {
@@ -165,19 +165,12 @@
 
   function initAuth() {
     const canUseSupabase = window.supabase && config.supabaseUrl && config.supabasePublishableKey;
-    if (!canUseSupabase) { setMessage("Offline mode is ready. Supabase sign-in is not configured."); return; }
+    if (!canUseSupabase) { attemptSync().catch(() => {}); return; }
     state.supabase = window.supabase.createClient(config.supabaseUrl, config.supabasePublishableKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
     state.supabase.auth.getSession().then(({ data }) => updateAuth(data && data.session ? data.session.user : null));
     state.supabase.auth.onAuthStateChange((_event, session) => updateAuth(session ? session.user : null));
   }
-  function updateAuth(user) { state.user = user; show($("#signed-in"), Boolean(user)); show($("#auth-form"), !user); $("#signed-in-email").textContent = user ? `Signed in as ${user.email}` : ""; setMessage(user ? "Sync is enabled for this account." : ""); setSyncMessage(user ? "Checking sync queue…" : "Sign in to back up completed sessions to Notion."); if (user) attemptSync().catch(() => {}); }
-  async function requestMagicLink(event) {
-    event.preventDefault();
-    if (!state.supabase) return setMessage("Supabase is unavailable; local mode still works.");
-    const email = $("#email").value.trim();
-    await state.supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href.split("#")[0], shouldCreateUser: false } });
-    setMessage("If this email is authorized, check your inbox for a sign-in link.");
-  }
+  function updateAuth(user) { state.user = user; show($("#signed-in"), Boolean(user)); $("#signed-in-email").textContent = user ? `Signed in as ${user.email}` : ""; setSyncMessage("Checking sync queue…"); attemptSync().catch(() => {}); }
 
   async function resetRotation() {
     const button = $("#reset-rotation"); if (button.dataset.confirm !== "yes") { button.dataset.confirm = "yes"; button.textContent = "Tap again to confirm"; $("#reset-message").textContent = "This changes only the next workout; completed history is kept."; setTimeout(() => { button.dataset.confirm = ""; button.textContent = "Reset to Push A"; }, 4000); return; }
@@ -186,7 +179,7 @@
 
   function bindEvents() {
     window.addEventListener("online", () => { setNetworkStatus(); attemptSync().catch(() => {}); }); window.addEventListener("offline", setNetworkStatus); setNetworkStatus();
-    $("#auth-form").addEventListener("submit", requestMagicLink); $("#sign-out").addEventListener("click", () => state.supabase && state.supabase.auth.signOut());
+    $("#sign-out").addEventListener("click", () => { if (state.supabase && window.confirm("Sign out? Cloud backup will stop, and this app no longer has a sign-in form. Your workout history will remain on this device.")) state.supabase.auth.signOut(); });
     $("#show-history").addEventListener("click", () => switchView("history-view")); $("#back-to-workout").addEventListener("click", () => switchView("workout-view")); $("#settings-button").addEventListener("click", () => switchView("settings-view")); $("#close-settings").addEventListener("click", () => switchView("workout-view")); $("#reset-rotation").addEventListener("click", resetRotation); document.querySelectorAll(".nav-button").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
   }
   async function init() { bindEvents(); try { const response = await fetch("./routines.json"); state.routines = await response.json(); await loadState(); renderAll(); initAuth(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {}); } catch (error) { $("#next-card").innerHTML = `<p class="muted">Could not load routines. ${escapeText(error.message)}</p>`; } }
