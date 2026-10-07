@@ -65,6 +65,11 @@
     state.sessions = (await dbAll(STORES.sessions)).sort((a, b) => new Date(b.finishedAt) - new Date(a.finishedAt));
   }
 
+  async function backfillSyncQueue() {
+    const queued = await dbAll(STORES.queue); const queuedIds = new Set(queued.map((item) => item.id));
+    for (const session of state.sessions) { if (!queuedIds.has(session.id)) await dbPut(STORES.queue, { id: session.id, session, status: "pending", attempts: 0, queuedAt: new Date().toISOString() }); }
+  }
+
   function findRoutine(id) { return state.routines.routines.find((routine) => routine.id === id); }
   function previousForExercise(exerciseId) {
     for (const session of state.sessions) { const item = session.exercises.find((exercise) => exercise.exerciseId === exerciseId); if (item && item.sets.some((set) => set.done)) return item; }
@@ -188,6 +193,6 @@
     $("#owner-login").addEventListener("submit", requestOwnerLogin); $("#sign-out").addEventListener("click", () => { if (state.supabase && window.confirm("Sign out? Cloud backup will stop. Your workout history will remain on this device.")) state.supabase.auth.signOut(); });
     $("#show-history").addEventListener("click", () => switchView("history-view")); $("#back-to-workout").addEventListener("click", () => switchView("workout-view")); $("#settings-button").addEventListener("click", () => switchView("settings-view")); $("#close-settings").addEventListener("click", () => switchView("workout-view")); $("#reset-rotation").addEventListener("click", resetRotation); document.querySelectorAll(".nav-button").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
   }
-  async function init() { bindEvents(); try { const response = await fetch("./routines.json"); state.routines = await response.json(); await loadState(); renderAll(); initAuth(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {}); } catch (error) { $("#next-card").innerHTML = `<p class="muted">Could not load routines. ${escapeText(error.message)}</p>`; } }
+  async function init() { bindEvents(); try { const response = await fetch("./routines.json"); state.routines = await response.json(); await loadState(); await backfillSyncQueue(); renderAll(); initAuth(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {}); } catch (error) { $("#next-card").innerHTML = `<p class="muted">Could not load routines. ${escapeText(error.message)}</p>`; } }
   init();
 })();

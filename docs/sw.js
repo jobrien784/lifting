@@ -1,4 +1,4 @@
-const CACHE_NAME = "lifting-shell-v5";
+const CACHE_NAME = "lifting-shell-v6";
 const APP_ASSETS = [
   "./",
   "./index.html",

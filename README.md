@@ -4,7 +4,7 @@ An installable, phone-first PWA for the six-workout rotation:
 
 `Push A → Pull A → Legs/Abs A → Push B → Pull B → Legs/Abs B`
 
-The first workout is Push A. The sequence advances only after **Finish workout**. In-progress sessions and completed history are saved locally in IndexedDB, so the app remains useful in a gym with poor reception. Existing signed-in sessions continue to upload finished workouts to the Supabase `sync-notion` Edge Function without delaying the Finish action. If a phone session expires, Settings includes a neutral owner recovery form that sends a Supabase email sign-in link without creating accounts.
+The first workout is Push A. The sequence advances only after **Finish workout**. In-progress sessions and completed history are saved locally in IndexedDB, so the app remains useful in a gym with poor reception. On startup, completed local sessions are reconciled into the upload queue once; existing queue entries and retry metadata are preserved. Existing signed-in sessions continue to upload finished workouts to the Supabase `sync-notion` Edge Function without delaying the Finish action. If a phone session expires, Settings includes a neutral owner recovery form that sends a Supabase email sign-in link without creating accounts.
 
 ## Publish the app
 
