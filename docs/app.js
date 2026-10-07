@@ -149,18 +149,18 @@
   function switchView(viewId) { ["workout-view", "history-view", "settings-view"].forEach((id) => show(document.getElementById(id), id === viewId)); document.querySelectorAll(".nav-button").forEach((button) => button.classList.toggle("active", button.dataset.view === viewId)); window.scrollTo({ top: 0, behavior: "smooth" }); if (viewId === "history-view") renderHistory("#history-list", state.sessions.length); }
   function renderAll() { renderNext(); renderActive(); renderHistory(); }
 
-  async function queueForSync(session) { const item = { id: session.id, session, status: "pending", attempts: 0, queuedAt: new Date().toISOString() }; await dbPut(STORES.queue, item); setSyncMessage("A completed session is waiting to sync."); attemptSync().catch(() => {}); }
+  async function queueForSync(session) { const item = { id: session.id, session, status: "pending", attempts: 0, queuedAt: new Date().toISOString() }; await dbPut(STORES.queue, item); setSyncMessage("A completed session is waiting to upload."); attemptSync().catch(() => {}); }
   async function attemptSync() {
     const pending = (await dbAll(STORES.queue)).filter((item) => item.status !== "synced");
-    if (!pending.length) { setSyncMessage(state.user ? "All completed sessions are synced." : "Cloud backup is inactive; workouts stay on this device."); return; }
+    if (!pending.length) { setSyncMessage(state.user ? "All completed sessions are backed up in Supabase; Notion sync runs in the background." : "Cloud backup is inactive; workouts stay on this device."); return; }
     if (!state.user || !state.supabase) { setSyncMessage(`${pending.length} session${pending.length === 1 ? "" : "s"} saved on this device; cloud backup is inactive.`); return; }
-    if (!navigator.onLine) { setSyncMessage(`${pending.length} session${pending.length === 1 ? "" : "s"} waiting to sync.`); return; }
+    if (!navigator.onLine) { setSyncMessage(`${pending.length} session${pending.length === 1 ? "" : "s"} waiting to upload.`); return; }
     const { data } = await state.supabase.auth.getSession(); const token = data && data.session && data.session.access_token;
     if (!token) return;
     for (const item of pending) {
-      try { const response = await fetch(`${config.supabaseUrl}/functions/v1/sync-notion`, { method: "POST", headers: { "Content-Type": "application/json", apikey: config.supabasePublishableKey, Authorization: `Bearer ${token}` }, body: JSON.stringify({ session: item.session }) }); if (!response.ok) throw new Error(`Sync failed (${response.status})`); await dbPut(STORES.queue, { ...item, status: "synced", syncedAt: new Date().toISOString() }); } catch (error) { await dbPut(STORES.queue, { ...item, attempts: item.attempts + 1, lastError: error.message }); break; }
+      try { const response = await fetch(`${config.supabaseUrl}/functions/v1/sync-notion`, { method: "POST", headers: { "Content-Type": "application/json", apikey: config.supabasePublishableKey, Authorization: `Bearer ${token}` }, body: JSON.stringify({ session: item.session }) }); if (!response.ok) throw new Error(`Upload failed (${response.status})`); await dbPut(STORES.queue, { ...item, status: "synced", syncedAt: new Date().toISOString() }); } catch (error) { await dbPut(STORES.queue, { ...item, attempts: item.attempts + 1, lastError: error.message }); break; }
     }
-    const left = (await dbAll(STORES.queue)).filter((item) => item.status !== "synced").length; setSyncMessage(left ? `${left} session${left === 1 ? "" : "s"} waiting to sync.` : "All completed sessions are synced.");
+    const left = (await dbAll(STORES.queue)).filter((item) => item.status !== "synced").length; setSyncMessage(left ? `${left} session${left === 1 ? "" : "s"} waiting to upload.` : "All completed sessions are backed up in Supabase; Notion sync runs in the background.");
   }
 
   function initAuth() {

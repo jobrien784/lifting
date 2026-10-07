@@ -1,0 +1,5 @@
+[functions.notion-worker]
+verify_jwt = false
+
+[functions.sync-notion]
+verify_jwt = true

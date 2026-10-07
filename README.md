@@ -20,9 +20,9 @@ In the Supabase dashboard:
 2. Run the private allowlist `insert` command in [`supabase/README.md`](supabase/README.md), replacing its placeholder with your Supabase Auth user UUID. The UUID is entered directly in Supabase and does not belong in GitHub or browser code.
 3. Keep **Allow new users to sign up** disabled under Supabase Authentication. This dashboard setting complements the owner-only RLS policies and Edge Function check; it is not a substitute for either one.
 4. Add the final GitHub Pages URL under **Authentication → URL Configuration → Redirect URLs**.
-5. Deploy the `sync-notion` Edge Function and set the private secrets described in [`supabase/README.md`](supabase/README.md), including the required `ALLOWED_USER_ID` set to the same UUID.
+5. Apply `supabase/migrations/202610070001_durable_notion_queue.sql`, then deploy both `sync-notion` and `notion-worker`. The browser endpoint only queues durable Supabase rows; the worker writes Notion asynchronously.
 6. Grant the Notion integration access to the two history data sources. The Notion MCP connection used by Codex does not itself authorize this deployed app.
 
 The Edge Function fails closed with a 503 when `ALLOWED_USER_ID` is missing or invalid, and rejects a different signed-in account before any database or Notion write. Ownership changes are handled in the private allowlist plus an updated `ALLOWED_USER_ID` secret; editing documentation or public client code does not enforce them.
 
-The original six routine templates remain public in `docs/routines.json`; completed workout history is not public. See the Supabase guide for CORS, secrets, and Notion property mapping.
+The original six routine templates remain public in `docs/routines.json`; completed workout history is not public. See the Supabase guide for CORS, secrets, scheduling, retry, reconciliation, and Notion property mapping.
