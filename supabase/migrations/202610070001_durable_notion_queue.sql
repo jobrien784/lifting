@@ -18,3 +18,6 @@ create or replace function public.fail_lifting_notion_session(p_session_id text,
 revoke all on function public.claim_lifting_notion_sessions(integer, interval) from public, anon, authenticated;
 revoke all on function public.complete_lifting_notion_session(text, text) from public, anon, authenticated;
 revoke all on function public.fail_lifting_notion_session(text, text, interval) from public, anon, authenticated;
+grant execute on function public.claim_lifting_notion_sessions(integer, interval) to service_role;
+grant execute on function public.complete_lifting_notion_session(text, text) to service_role;
+grant execute on function public.fail_lifting_notion_session(text, text, interval) to service_role;
