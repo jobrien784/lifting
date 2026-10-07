@@ -27,6 +27,12 @@ h2 { font-size: 1.65rem; letter-spacing: -.04em; margin-bottom: 0; }
 h3 { font-size: 1rem; margin-bottom: .35rem; }
 .form-message { min-height: 1.25rem; color: var(--lime); font-size: .82rem; margin: .65rem 0 0; }
 .signed-in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--lime); font-size: .85rem; margin-top: 1rem; }
+.login-form { margin-top: 1rem; }
+.login-form label { display: block; font-weight: 750; margin-bottom: .35rem; }
+.login-help { color: var(--muted); font-size: .8rem; margin-bottom: .65rem; }
+.login-row { display: flex; gap: .55rem; align-items: stretch; }
+.login-row input { min-width: 0; }
+.login-row .button { flex: 0 0 auto; }
 input { background: #111615; color: var(--ink); border: 1px solid var(--line); border-radius: .65rem; padding: .78rem .8rem; outline: none; width: 100%; }
 .set-row input { padding: .58rem .55rem; text-align: center; }
 .set-row input[type=number] { min-width: 0; }
