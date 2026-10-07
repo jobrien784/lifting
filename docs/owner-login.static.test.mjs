@@ -8,6 +8,6 @@ assert.match(app, /signInWithOtp\(\{ email, options: \{ shouldCreateUser: false/
 assert.match(app, /If this email is eligible, a sign-in link is on its way/);
 assert.match(app, /attemptSync\(\)\.catch\(\(\) => \{\}\)/);
 assert.match(html, /id="owner-login"/);
-assert.match(serviceWorker, /lifting-shell-v6/);
+assert.match(serviceWorker, /lifting-shell-v7/);
 assert.doesNotMatch(app + html, /ALLOWED_USER_ID|NOTION_TOKEN/i);
 console.log("owner login static checks passed");

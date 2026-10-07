@@ -7,5 +7,5 @@ assert.match(app, /async function backfillSyncQueue\(\)/);
 assert.match(app, /const queuedIds = new Set\(queued\.map\(\(item\) => item\.id\)\)/);
 assert.match(app, /if \(!queuedIds\.has\(session\.id\)\) await dbPut\(STORES\.queue/);
 assert.match(app, /await loadState\(\); await backfillSyncQueue\(\); renderAll\(\); initAuth\(\)/);
-assert.match(serviceWorker, /lifting-shell-v6/);
+assert.match(serviceWorker, /lifting-shell-v7/);
 console.log("local history backfill static checks passed");

@@ -28,6 +28,7 @@ h3 { font-size: 1rem; margin-bottom: .35rem; }
 .form-message { min-height: 1.25rem; color: var(--lime); font-size: .82rem; margin: .65rem 0 0; }
 .signed-in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--lime); font-size: .85rem; margin-top: 1rem; }
 .login-form { margin-top: 1rem; }
+.login-form + .login-form { border-top: 1px solid var(--line); padding-top: 1rem; }
 .login-form label { display: block; font-weight: 750; margin-bottom: .35rem; }
 .login-help { color: var(--muted); font-size: .8rem; margin-bottom: .65rem; }
 .login-row { display: flex; gap: .55rem; align-items: stretch; }

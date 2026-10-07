@@ -58,6 +58,13 @@
 
   function setNetworkStatus() { $("#network-status").classList.toggle("online", navigator.onLine); $("#network-status").title = navigator.onLine ? "Online" : "Offline — local mode"; }
   function setSyncMessage(message) { $("#sync-status").textContent = message || ""; }
+  function isSafeAuthLink(value) {
+    try {
+      const link = new URL(value); const project = new URL(config.supabaseUrl); const redirect = link.searchParams.get("redirect_to");
+      if (link.protocol !== "https:" || link.origin !== project.origin || link.pathname !== "/auth/v1/verify" || link.username || link.password || !link.searchParams.get("token") || !link.searchParams.get("type")) return false;
+      return !redirect || new URL(redirect).origin === window.location.origin;
+    } catch (_error) { return false; }
+  }
 
   async function loadState() {
     state.meta = (await dbGet(STORES.meta, "app")) || { id: "app", nextIndex: 0 };
@@ -182,6 +189,11 @@
     const button = form.querySelector("button[type=submit]"); button.disabled = true; message.textContent = "Sending a sign-in link…";
     try { const { error } = await state.supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: window.location.href } }); if (error) throw error; message.textContent = "If this email is eligible, a sign-in link is on its way. Check your inbox."; form.reset(); } catch (_error) { message.textContent = "If this email is eligible, a sign-in link is on its way. Check your inbox."; } finally { button.disabled = false; }
   }
+  function usePastedLogin(event) {
+    event.preventDefault(); const form = event.currentTarget; const input = $("#auth-link"); const message = $("#paste-message"); const value = input.value.trim(); input.value = "";
+    if (!isSafeAuthLink(value)) { message.textContent = "That sign-in link is not valid for this app. Request a new link or paste the complete link."; return; }
+    message.textContent = "Opening the sign-in link in this app…"; window.location.assign(value);
+  }
 
   async function resetRotation() {
     const button = $("#reset-rotation"); if (button.dataset.confirm !== "yes") { button.dataset.confirm = "yes"; button.textContent = "Tap again to confirm"; $("#reset-message").textContent = "This changes only the next workout; completed history is kept."; setTimeout(() => { button.dataset.confirm = ""; button.textContent = "Reset to Push A"; }, 4000); return; }
@@ -190,7 +202,7 @@
 
   function bindEvents() {
     window.addEventListener("online", () => { setNetworkStatus(); attemptSync().catch(() => {}); }); window.addEventListener("offline", setNetworkStatus); setNetworkStatus();
-    $("#owner-login").addEventListener("submit", requestOwnerLogin); $("#sign-out").addEventListener("click", () => { if (state.supabase && window.confirm("Sign out? Cloud backup will stop. Your workout history will remain on this device.")) state.supabase.auth.signOut(); });
+    $("#owner-login").addEventListener("submit", requestOwnerLogin); $("#paste-login").addEventListener("submit", usePastedLogin); $("#sign-out").addEventListener("click", () => { if (state.supabase && window.confirm("Sign out? Cloud backup will stop. Your workout history will remain on this device.")) state.supabase.auth.signOut(); });
     $("#show-history").addEventListener("click", () => switchView("history-view")); $("#back-to-workout").addEventListener("click", () => switchView("workout-view")); $("#settings-button").addEventListener("click", () => switchView("settings-view")); $("#close-settings").addEventListener("click", () => switchView("workout-view")); $("#reset-rotation").addEventListener("click", resetRotation); document.querySelectorAll(".nav-button").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
   }
   async function init() { bindEvents(); try { const response = await fetch("./routines.json"); state.routines = await response.json(); await loadState(); await backfillSyncQueue(); renderAll(); initAuth(); if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {}); } catch (error) { $("#next-card").innerHTML = `<p class="muted">Could not load routines. ${escapeText(error.message)}</p>`; } }
